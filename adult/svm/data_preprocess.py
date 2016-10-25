@@ -27,20 +27,20 @@ occupation_map[' ?'] = len(occupation_map)
 native_country_map[' ?'] = native_country_map[" United-States"]
 
 def row2dict(row):
-    dict = {}
-    dict['age'] = long(row[0])
-    dict['workclass'] = workclass_map[row[1]]
-    #抽样权重不要dict['fnlwgt'] = long(row[2])
-    #与education-num重复dict['education'] = row[3]
-    dict['education-num'] = long(row[4])
-    dict['marcital-status'] = marital_status_map[row[5]]
-    dict['occupation'] = occupation_map[row[6]]
-    dict['relationship'] = relationship_map[row[7]]
-    dict['race'] = race_map[row[8]]
-    dict['sex'] = 0 if row[9] == ' Male' else 1
-    dict['capital-gain'] = long(row[10])
-    dict['capital-loss'] = long(row[11])
-    dict['hours-per-week'] = long(row[12])
-    dict['native-country'] = native_country_map[row[13]]
-    #dict['income'] = 0 if row[14] == ' <=50K' else 1
+    dict = []
+    dict.append(int(row[0]))
+    dict.append(workclass_map[row[1]])
+    # 抽样权重不要dict['fnlwgt'] = long(row[2])
+    # 与education-num重复dict['education'] = row[3]
+    dict.append(int(row[4]))
+    dict.append(marital_status_map[row[5]])
+    dict.append(occupation_map[row[6]])
+    dict.append(relationship_map[row[7]])
+    dict.append(race_map[row[8]])
+    dict.append(0 if row[9] == ' Male' else 1)
+    dict.append(int(row[10]))
+    dict.append(int(row[11]))
+    dict.append(int(row[12]))
+    dict.append(native_country_map[row[13]])
+    # dict['income'] = 0 if row[14] == ' <=50K' else 1
     return dict

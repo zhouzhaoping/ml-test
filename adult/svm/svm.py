@@ -3,7 +3,6 @@ import csv
 import time
 from data_preprocess import row2dict
 from sklearn.svm import SVC
-from sklearn.feature_extraction import DictVectorizer
 from sklearn import metrics
 from sklearn import preprocessing
 
@@ -19,14 +18,13 @@ for row in reader:
 print 'load %d train_data complete!' % (len(train_data))
 
 #数据归一化
-#print train_data.toarray()
-#scaler = preprocessing.StandardScaler().fit(train_data)
-#scaler.transform(train_data)
+scaler = preprocessing.StandardScaler().fit(train_data)
+train_x = scaler.transform(train_data)
 
 #特征选择
-vec = DictVectorizer()
-train_x = vec.fit_transform(train_data).toarray()
-print 'select %d features complete!' % (len(train_x[0]))
+#vec = DictVectorizer()
+#train_x = vec.fit_transform(train_data).toarray()
+#print 'select %d features complete!' % (len(train_x[0]))
 
 #算法执行
 start = time.clock()
@@ -42,11 +40,12 @@ test_y = []
 for row in reader:
     test_data.append(row2dict(row))
     test_y.append(0 if row[14] == ' <=50K.' else 1)
-test_x = vec.transform(test_data).toarray()
-print 'load %d test_data complete!' % (len(test_x))
+#test_x = vec.transform(test_data).toarray()
+print 'load %d test_data complete!' % (len(test_data))
 
 #预测
-predict = model.predict(test_x)
+train_y = scaler.transform(test_data)
+predict = model.predict(train_y)
 print(metrics.classification_report(test_y, predict))
 
 #precision = metrics.precision_score(test_y, predict)

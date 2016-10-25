@@ -22,7 +22,7 @@ import time
 
 from data_preprocess import row2dict
 from sklearn.svm import SVC
-from sklearn.feature_extraction import DictVectorizer
+from sklearn import preprocessing
 from sklearn.model_selection import GridSearchCV
 from pandas import DataFrame
 
@@ -37,19 +37,18 @@ for row in reader:
         train_y.append(0 if row[14] == ' <=50K' else 1)
 print 'load %d train_data complete!' % (len(train_data))
 
-#特征选择
-vec = DictVectorizer()
-train_x = vec.fit_transform(train_data[:10000]).toarray()
-print 'select %d features complete!' % (len(train_x[0]))
+#数据归一化
+scaler = preprocessing.StandardScaler().fit(train_data)
+train_x = scaler.transform(train_data)
 
 #参数优化
 start = time.clock()
 model = SVC(kernel='rbf', probability=True)
 
-param_grid = {'C': [10, 50, 80, 100], 'gamma': [0.001, 0.0005, 0.0003, 0.0001]}
+param_grid = {'C': [50, 60, 70, 80, 90], 'gamma': [0.0008, 0.0007, 0.0006, 0.0005, 0.0004]}
 if __name__ == '__main__':
     grid_search = GridSearchCV(model, param_grid, n_jobs=-1, verbose=1)
-    grid_search.fit(train_x, train_y[:10000])
+    grid_search.fit(train_x[:10000], train_y[:10000])
 
     #best_parameters = grid_search.best_estimator_.get_params()
     #for para, val in best_parameters.items():

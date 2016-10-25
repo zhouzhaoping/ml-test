@@ -31,10 +31,8 @@ reader = csv.reader(open('../adult.data', 'r'))
 train_data = []
 train_y = []
 for row in reader:
-    #去除训练集中的未知项
-    if ' ?' not in row:
-        train_data.append(row2dict(row))
-        train_y.append(0 if row[14] == ' <=50K' else 1)
+    train_data.append(row2dict(row))
+    train_y.append(0 if row[14] == ' <=50K' else 1)
 print 'load %d train_data complete!' % (len(train_data))
 
 #数据归一化
@@ -45,7 +43,7 @@ train_x = scaler.transform(train_data)
 start = time.clock()
 model = SVC(kernel='rbf', probability=True)
 
-param_grid = {'C': [50, 60, 70, 80, 90], 'gamma': [0.0008, 0.0007, 0.0006, 0.0005, 0.0004]}
+param_grid = {'C': [10, 100, 1000], 'gamma': [0.0001, 0.001, 0.01]}
 if __name__ == '__main__':
     grid_search = GridSearchCV(model, param_grid, n_jobs=-1, verbose=1)
     grid_search.fit(train_x[:10000], train_y[:10000])

@@ -9,10 +9,20 @@ missing_name = []
 count_detail = {}
 capital_gain_count = 0
 capital_loss_count = 0
+index = 1
+incomesum = {}
+personsum = {}
 for i in range(len(name)):
     missing_name.append(0)
 
 for row in reader:
+    #计算评价工资
+    if row[index] not in incomesum.keys():
+        incomesum[row[index]] = 0 if row[14] == ' <=50K' else 1
+        personsum[row[index]] = 1
+    else:
+        incomesum[row[index]] += 0 if row[14] == ' <=50K' else 1
+        personsum[row[index]] += 1
     flag = 0
     for i in range(len(row)):
         #统计缺失项
@@ -46,3 +56,12 @@ for (k, v) in sorted(count_detail.iteritems(), key=operator.itemgetter(1), rever
 #计算capital不为零的百分比
 print 'capital_gain_count: %.2f%%' % (capital_gain_count * 100 / float(reader.line_num - missing_sum))
 print 'capital_loss_count: %.2f%%' % (capital_loss_count * 100 / float(reader.line_num - missing_sum))
+
+#计算平均工资
+for k in incomesum.keys():
+    incomesum[k] = (float)(incomesum[k]) / personsum[k]
+for (k, v) in sorted(incomesum.iteritems(), key=operator.itemgetter(1), reverse=True):
+    print "%s's perincome : %.2f%% , sample : %d" % (k, v, personsum[k])
+
+for (k, v) in sorted(incomesum.iteritems(), key=operator.itemgetter(1), reverse=True):
+    print "\"%s\"," % k,

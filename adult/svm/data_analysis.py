@@ -9,7 +9,7 @@ missing_name = []
 count_detail = {}
 capital_gain_count = 0
 capital_loss_count = 0
-index = 1
+index = 13
 incomesum = {}
 personsum = {}
 for i in range(len(name)):

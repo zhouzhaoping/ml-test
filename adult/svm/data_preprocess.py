@@ -32,13 +32,35 @@ native_country_map = string2code(native_country_value)
 #occupation_map[' ?'] = len(occupation_map)
 #native_country_map[' ?'] = native_country_map[" United-States"]
 
+def age2level(n):
+    if n >= 61:
+        return 5
+    elif n <= 20:
+        return 0
+    else:
+        return (n - 11) / 10
+
+def education2level(n):
+    if n < 13:
+        return (n - 1) / 3
+    else:
+        return (n - 5) / 2
+
+def country2level(n):
+    if n < 24:
+        return n / 8
+    elif n < 33:
+        return 3
+    else:
+        return 4
+
 def row2dict(row):
     dict = []
-    dict.append(int(row[0]))#age
+    dict.append(age2level(int(row[0])))#age
     dict.append(workclass_map[row[1]])#workclass
     # 抽样权重不要dict['fnlwgt'] = long(row[2])
     # 与education-num重复dict['education'] = row[3]
-    dict.append(int(row[4]))#education-num
+    dict.append(education2level(int(row[4])))#education-num
     dict.append(marital_status_map[row[5]])
     dict.append(occupation_map[row[6]])
     dict.append(relationship_map[row[7]])
@@ -47,6 +69,7 @@ def row2dict(row):
     dict.append(int(row[10]))#capital-gain
     dict.append(int(row[11]))#capital-loss
     dict.append(int(row[12]))#hours-per-week
-    dict.append(native_country_map[row[13]])
+    dict.append(country2level(native_country_map[row[13]]))
     # dict['income'] = 0 if row[14] == ' <=50K' else 1
     return dict
+

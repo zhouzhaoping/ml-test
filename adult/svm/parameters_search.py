@@ -19,12 +19,26 @@ SVC参数解释
 '''
 import csv
 import time
-
+import numpy as np
 from data_preprocess import row2dict
 from sklearn.svm import SVC
 from sklearn import preprocessing
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from pandas import DataFrame
+from scipy.stats import randint, expon
+import random
+
+# Utility function to report best scores
+def report(results, n_top=3):
+    for i in range(1, n_top + 1):
+        candidates = np.flatnonzero(results['rank_test_score'] == i)
+        for candidate in candidates:
+            print("Model with rank: {0}".format(i))
+            print("Mean validation score: {0:.3f} (std: {1:.3f})".format(
+                  results['mean_test_score'][candidate],
+                  results['std_test_score'][candidate]))
+            print("Parameters: {0}".format(results['params'][candidate]))
+            print("")
 
 #加载数据
 reader = csv.reader(open('../adult.data', 'r'))
@@ -39,22 +53,38 @@ print 'load %d train_data complete!' % (len(train_data))
 scaler = preprocessing.StandardScaler().fit(train_data)
 train_x = scaler.transform(train_data)
 
-#参数优化
+#参数优化（网格搜索or随机搜索）
 start = time.clock()
 model = SVC(kernel='rbf', probability=True)
 
-param_grid = {'C': [10, 100, 1000], 'gamma': [0.0001, 0.001, 0.01]}
-if __name__ == '__main__':
-    grid_search = GridSearchCV(model, param_grid, n_jobs=-1, verbose=1)
-    grid_search.fit(train_x[:10000], train_y[:10000])
+#添加抽样过程
+X = np.column_stack((train_x, train_y))
+random.shuffle(X)
+X = X[:1000]
+train_x = [x[:-1] for x in X]
+train_y = [x[-1] for x in X]
 
-    #best_parameters = grid_search.best_estimator_.get_params()
-    #for para, val in best_parameters.items():
-    #    print para, val
-    results = DataFrame(grid_search.cv_results_)
-    results = results.sort(columns='rank_test_score').head(10)
-    print results.loc[:, ['rank_test_score', 'params', 'mean_test_score']]
-    print("Best: %f using %s" % (grid_search.best_score_, grid_search.best_params_))
+if __name__ == '__main__':
+    n_iter_search = 50
+    param_dist = {'C': expon(scale=100), 'gamma': expon(scale=.1)}
+    random_search = RandomizedSearchCV(model, param_distributions=param_dist, n_iter=n_iter_search, n_jobs=-1)
+    random_search.fit(train_x, train_y)
+    print("RandomizedSearchCV took %.2f seconds for %d candidates"
+          " parameter settings." % ((time.clock() - start), n_iter_search))
+    report(random_search.cv_results_, n_top=10)
+
+# param_grid = {'C': [100, 1000, 10000], 'gamma': [0.001, 0.01, 0.1]}
+# if __name__ == '__main__':
+#     grid_search = GridSearchCV(model, param_grid, n_jobs=-1, verbose=1)
+#     grid_search.fit(train_x[:10000], train_y[:10000])
+#
+#     #best_parameters = grid_search.best_estimator_.get_params()
+#     #for para, val in best_parameters.items():
+#     #    print para, val
+#     results = DataFrame(grid_search.cv_results_)
+#     results = results.sort(columns='rank_test_score').head(10)
+#     print results.loc[:, ['rank_test_score', 'params', 'mean_test_score']]
+#     print("Best: %f using %s" % (grid_search.best_score_, grid_search.best_params_))
 
 end = time.clock()
 print "searching SVM parameters : %f s" % (end - start)

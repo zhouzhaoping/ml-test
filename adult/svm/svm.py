@@ -24,7 +24,7 @@ train_x = scaler.transform(train_data)
 
 #算法执行
 start = time.clock()
-model = SVC(kernel='rbf', C=100, gamma=0.01, probability=True)#参数优化详见parameters_search.py
+model = SVC(kernel='rbf', C=100, gamma=0.2, probability=True)#参数优化详见parameters_search.py
 model.fit(train_x, train_y)
 end = time.clock()
 print "running SVM: %f s" % (end - start)

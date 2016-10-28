@@ -64,4 +64,5 @@ for (k, v) in sorted(incomesum.iteritems(), key=operator.itemgetter(1), reverse=
     print "%s's perincome : %.2f%% , sample : %d" % (k, v, personsum[k])
 
 for (k, v) in sorted(incomesum.iteritems(), key=operator.itemgetter(1), reverse=True):
-    print "\"%s\"," % k,
+    print "%s," % k,
+    #print "\"%s\"," % k,

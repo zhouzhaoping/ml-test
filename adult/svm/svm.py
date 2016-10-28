@@ -21,10 +21,11 @@ print 'load %d train_data complete!' % (len(train_data))
 #数据归一化
 scaler = preprocessing.StandardScaler().fit(train_data)
 train_x = scaler.transform(train_data)
+print 'z-core complete!'
 
 #算法执行
 start = time.clock()
-model = SVC(kernel='rbf', C=100, gamma=0.2, probability=True)#参数优化详见parameters_search.py
+model = SVC(kernel='rbf', C=6000, gamma=0.3, probability=True, max_iter=-1)#参数优化详见parameters_search.py
 model.fit(train_x, train_y)
 end = time.clock()
 print "running SVM: %f s" % (end - start)

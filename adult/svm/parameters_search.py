@@ -27,6 +27,8 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from pandas import DataFrame
 from scipy.stats import randint, expon
 import random
+from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 
 # Utility function to report best scores
 def report(results, n_top=3):
@@ -39,6 +41,28 @@ def report(results, n_top=3):
                   results['std_test_score'][candidate]))
             print("Parameters: {0}".format(results['params'][candidate]))
             print("")
+
+def draw_report(results):
+    x = []
+    y = []
+    z = []
+    for i in range(1, len(results) + 1):
+        candidates = np.flatnonzero(results['rank_test_score'] == i)
+        for candidate in candidates:
+            z.append(results['mean_test_score'][candidate])
+            x.append(results['params'][candidate]['C'])
+            y.append(results['params'][candidate]['gamma'])
+    print 'C : ', x
+    print 'gamma : ', y
+    print 'score : ', z
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(x[:5], y[:5], z[:5], c='r') #绘制数据点
+    ax.scatter(x[5:], y[5:], z[5:], c='y') #绘制数据点
+    ax.set_zlabel('score') #坐标轴
+    ax.set_ylabel('gamma')
+    ax.set_xlabel('C')
+    plt.show()
 
 #加载数据
 reader = csv.reader(open('../adult.data', 'r'))
@@ -58,25 +82,32 @@ start = time.clock()
 model = SVC(kernel='rbf', probability=True)
 
 #添加抽样过程
+size = len(train_data) / 10;
 X = np.column_stack((train_x, train_y))
 random.shuffle(X)
-X = X[:1000]
+X = X[:size]
 train_x = [x[:-1] for x in X]
 train_y = [x[-1] for x in X]
 
 if __name__ == '__main__':
     n_iter_search = 50
-    param_dist = {'C': expon(scale=100), 'gamma': expon(scale=.1)}
+     # param_dist = {'kernel': ['poly', 'rbf', 'sigmoid'], 'C': expon(scale=100),
+     #              'gamma': expon(scale=.1), 'class_weight': [None, 'balanced']}
+    # param_dist = {'kernel': ['rbf'], 'C': expon(scale=100),
+    #               'gamma': expon(scale=.1), 'class_weight': [None]}
+    param_dist = {'kernel': ['rbf'], 'C': range(1000, 10000),
+                  'gamma': [float(x) / 10 for x in range(1, 50)], 'class_weight': [None]}
     random_search = RandomizedSearchCV(model, param_distributions=param_dist, n_iter=n_iter_search, n_jobs=-1)
     random_search.fit(train_x, train_y)
     print("RandomizedSearchCV took %.2f seconds for %d candidates"
           " parameter settings." % ((time.clock() - start), n_iter_search))
     report(random_search.cv_results_, n_top=10)
+    draw_report(random_search.cv_results_)
 
-# param_grid = {'C': [100, 1000, 10000], 'gamma': [0.001, 0.01, 0.1]}
+# param_grid = {'C': range(1, 10000), 'gamma': [float(x) / 100 for x in range(1, 1000)]}
 # if __name__ == '__main__':
 #     grid_search = GridSearchCV(model, param_grid, n_jobs=-1, verbose=1)
-#     grid_search.fit(train_x[:10000], train_y[:10000])
+#     grid_search.fit(train_x, train_y)
 #
 #     #best_parameters = grid_search.best_estimator_.get_params()
 #     #for para, val in best_parameters.items():
@@ -85,6 +116,7 @@ if __name__ == '__main__':
 #     results = results.sort(columns='rank_test_score').head(10)
 #     print results.loc[:, ['rank_test_score', 'params', 'mean_test_score']]
 #     print("Best: %f using %s" % (grid_search.best_score_, grid_search.best_params_))
+#     draw_report(grid_search.cv_results_)
 
 end = time.clock()
 print "searching SVM parameters : %f s" % (end - start)
